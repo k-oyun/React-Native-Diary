@@ -1,7 +1,8 @@
-import React, {useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import styled from "styled-components/native";
 import colors from "../color";
 import {Alert} from "react-native";
+import {useDB} from "../context";
 
 const View = styled.View`
   background-color: ${colors.bgColor};
@@ -60,7 +61,10 @@ const EmotionText = styled.Text`
 
 const emotions = ["🤯", "🥲", "🤬", "🤗", "🥰", "😊", "🤩"];
 
-const Write = () => {
+const Write = ({navigation: {goBack}}) => {
+  //context를 통해 데이터베이스 context 사용
+  const realm = useDB();
+
   const [selectedEmotion, setEmotion] = useState(null);
   const [feelings, setFeelings] = useState("");
   const onChangeText = (text) => setFeelings(text);
@@ -69,7 +73,18 @@ const Write = () => {
     if ((feelings === "") | (selectedEmotion == null)) {
       return Alert.alert("Please complete form.");
     }
+    //데이터베이스에 쓰기
+    //prop들을 적기만하면 된다.
+    realm.write(() => {
+      realm.create("Feeling", {
+        _id: Date.now(),
+        emotion: selectedEmotion,
+        message: feelings,
+      });
+    });
+    goBack();
   };
+  //데이터베이스 정보 저장
   return (
     <View>
       <Title>How do you feel today?</Title>

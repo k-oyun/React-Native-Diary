@@ -34,6 +34,7 @@ const BtnText = styled.Text`
 const Home = ({navigation: {navigate}}) => (
   <View>
     <Title>My journal</Title>
+
     <Btn onPress={() => navigate("Write")}>
       <Ionicons name="add" color="white" size={40} />
     </Btn>
