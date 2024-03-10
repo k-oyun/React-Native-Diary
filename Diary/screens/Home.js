@@ -6,12 +6,13 @@ import {Ionicons} from "@expo/vector-icons";
 const View = styled.View`
   flex: 1;
   background-color: ${colors.bgColor};
-  padding: 0px 50px;
+  padding: 0px 30px;
   padding-top: 100px;
 `;
 const Title = styled.Text`
   color: ${colors.textColor};
   font-size: 38px;
+  font-weight: 500;
   margin-bottom: 100px;
 `;
 const Btn = styled.TouchableOpacity`
