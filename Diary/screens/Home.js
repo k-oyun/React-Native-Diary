@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 import colors from "../color";
 import {Ionicons} from "@expo/vector-icons";
 import {useDB} from "../context";
-import {FlatList} from "react-native";
+import {FlatList, LayoutAnimation, TouchableOpacity} from "react-native";
 
 const View = styled.View`
   flex: 1;
@@ -58,11 +58,15 @@ const Home = ({navigation: {navigate}}) => {
   const [feelings, setFeelings] = useState([]);
   useEffect(() => {
     const feelings = realm.objects("Feeling");
-    setFeelings(feelings);
+
     //데이터베이스의 변화(추가,삭제)를 실시간 추적하여 렌더링
-    feelings.addListener(() => {
-      const feelings = realm.objects("Feeling");
-      setFeelings(feelings);
+    feelings.addListener((feelings, changes) => {
+      //Layout animation은 state에 변화가 있을시 자동으로 애니메이션 실행 보통 state전에 사용
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+      //단축키 제공 LayoutAnimation.spring();
+
+      //최근 작성 순서로
+      setFeelings(feelings.sorted("_id", true));
     });
     return () => {
       feelings.removeAllListeners();
@@ -70,7 +74,17 @@ const Home = ({navigation: {navigate}}) => {
   }, []);
 
   //필터링하는법
-  // const happy = feelings.filtered("emotion='🥲' ");
+  //feelings.filtered("emotion='🥲' ");
+
+  //작성한 것을 삭제
+  //Record를 누를시 삭제
+  const onPress = (id) => {
+    realm.write(() => {
+      //id를 이용하여 DB의 feeling을 찾고 제거
+      const feeling = realm.objectForPrimaryKey("Feeling", id);
+      realm.delete(feeling);
+    });
+  };
   return (
     <View>
       <Title>My journal</Title>
@@ -81,10 +95,12 @@ const Home = ({navigation: {navigate}}) => {
         ItemSeparatorComponent={Separator}
         keyExtractor={(feeling) => feeling._id + ""}
         renderItem={({item}) => (
-          <Record>
-            <Emotion>{item.emotion}</Emotion>
-            <Message>{item.message}</Message>
-          </Record>
+          <TouchableOpacity onPress={() => onPress(item._id)}>
+            <Record>
+              <Emotion>{item.emotion}</Emotion>
+              <Message>{item.message}</Message>
+            </Record>
+          </TouchableOpacity>
         )}
       />
       <Btn onPress={() => navigate("Write")}>
